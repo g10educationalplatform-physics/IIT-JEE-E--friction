@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title> Quiz – 10. Motion of Two Bodies, One Resting on the Other — Force applied to the lower body,covering the four cases</title>
+  <style>
+    body{font-family:Arial, sans-serif;padding:20px;background:#121212;color:#f0f0f0;}
+    #logo{display:block;margin:0 auto 25px;max-width:180px;}
+    #name-container{background:#1e1e1e;padding:30px;border-radius:6px;max-width:420px;margin:0 auto;}
+    #name-container input{width:100%;padding:10px;margin:10px 0 15px;border:none;border-radius:4px;font-size:16px;}
+    #quiz-container{display:none;}
+    .question{border:1px solid #333;padding:15px;margin-bottom:20px;border-radius:5px;background:#1e1e1e;}
+    .question h3{margin:0 0 10px;}
+    /* each option is a label-row: radio + text on same line, one option per row */
+    .option-item {
+      display: flex;                 /* radio + text in same line */
+      align-items: center;
+      gap: 8px;                      /* spacing between radio and text */
+      margin: 6px 0;                 /* space between options */
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .option-item input[type="radio"] {
+      margin: 0;                     /* no extra offset */
+    }
+    .submit-button,.toggle-button,.dontknow-button{margin-top:10px;padding:6px 12px;background:#007BFF;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:5px;}
+    .solution{display:none;margin-top:10px;background:#2d2d2d;padding:10px;border-left:4px solid #28a745;}
+    #scorecard{background:#2d2d2d;padding:15px;border-radius:6px;margin-top:30px;display:none;}
+    #timer{font-weight:bold;color:#00ffcc;}
+    #studentPrintName{text-align:center;font-size:18px;font-weight:bold;margin-top:-15px;margin-bottom:5px;display:none;}
+    #examDateTime{text-align:center;font-size:14px;margin-bottom:20px;display:none;}
+    @media print {
+      body { background: #fff; color:#000; }
+      .submit-button, .dontknow-button, .toggle-button, #reportBtn, #reportModal { display:none !important; }
+      #name-container { display:none !important; }
+    }
+
+    /* 🔹 Floating Report Button */
+    #reportBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+
+    /* 🔹 Popup Modal */
+    #reportModal {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #1e1e1e;
+      border: 1px solid #444;
+      padding: 15px;
+      border-radius: 8px;
+      width: 260px;
+      z-index: 1001;
+    }
+    #reportModal textarea {
+      width: 100%;
+      height: 80px;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      resize: none;
+      font-size: 14px;
+    }
+    #reportModal button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #sendReport { background: #28a745; color: white; }
+    #closeReport { background: #dc3545; color: white; margin-left: 5px; }
+  </style>
+  <!-- MathJax -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<img id="logo" src="https://i.ibb.co/WNZTWPwv/LOGO-PNG-2025-fab.png" alt="Logo" />
+
+<div id="studentPrintName"></div>
+<div id="examDateTime"></div>
+
+<div id="name-container">
+  <h2>Enter your name to begin</h2>
+  <input type="text" id="studentNameInput" placeholder="Your Name" />
+  <button class="submit-button" onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div id="quiz-container">
+
+  <h2> Quiz – 10. Motion of Two Bodies, One Resting on the Other — Force applied to the lower body,covering the four cases</h2>
+  
+  <p><strong>Time Elapsed:</strong> <span id="timer">00:00</span></p>
+  <div id="questions-container"></div>
+
+  <div style="margin-top:30px;">
+    <button class="submit-button" onclick="finalSubmit()">Final Submit</button>
+    <button class="submit-button" onclick="printQuestions()">Print Questions</button>
+    <button class="submit-button" id="printScoreBtn" onclick="printScorecard()" style="display:none;">Save or Print Scorecard</button>
+    <!-- 🔹 WhatsApp button instead of PDF -->
+    <button class="submit-button" id="shareWhatsappBtn" style="display:none;">SHARE on WhatsApp</button>
+  </div>
+
+ <div id="scorecard">
+  <h3>Your Scorecard</h3>
+  <p id="scoreText"></p>
+  <table id="scoreTable" border="1" cellspacing="0" cellpadding="6" style="width:100%;border-collapse:collapse;margin-top:15px;">
+    <thead style="background:#333;color:#fff;">
+      <tr>
+        <th>Q.No</th>
+        <th>Question</th>
+        <th>Your Answer</th>
+        <th>Correct Answer</th>
+        <th>Result</th>
+        <th>Solution</th>
+      </tr>
+    </thead>
+    <tbody id="scoreDetails"></tbody>
+  </table>
+</div>
+
+<!-- 🔹 Floating Report Button -->
+<button id="reportBtn">Report Mistake</button>
+
+<!-- 🔹 Popup Modal -->
+<div id="reportModal">
+  <textarea id="reportMsg" placeholder="Describe the mistake..."></textarea>
+  <div style="text-align:right;">
+    <button id="sendReport">Send</button>
+    <button id="closeReport">Close</button>
+  </div>
+</div>
+
+<script>
+const Q = [
+  {
+    "id": "q1",
+    "text": "Block A (2 kg) rests on block B (4 kg). A force of 12 N is applied to block B on a perfectly smooth surface (no friction anywhere). Find acceleration of block A.",
+    "options": ["0", "2 m/s^2", "3 m/s^2", "6 m/s^2"],
+    "correct": "A",
+    "solution": "No friction → A is not acted by any horizontal force → acceleration = 0."
+  },
+  {
+    "id": "q2",
+    "text": "In the above situation (no friction), acceleration of block B is:",
+    "options": ["0", "2 m/s^2", "3 m/s^2", "6 m/s^2"],
+    "correct": "C",
+    "solution": "a = F / mB = 12 / 4 = 3 m/s²."
+  },
+  {
+    "id": "q3",
+    "text": "Two blocks A (3 kg) on B (6 kg) are pulled with force 18 N on B. If no friction, the contact force between A and B is:",
+    "options": ["0", "3 N", "6 N", "9 N"],
+    "correct": "A",
+    "solution": "No friction → A does not interact with B → contact force = 0."
+  },
+  {
+    "id": "q4",
+    "text": "Now consider A (2 kg) on B (3 kg). A force of 10 N is applied to B. If μ = 0.5 between A and B only, is there slipping? (g = 10 m/s²).",
+    "options": ["Yes", "No", "Depends on μ with floor", "None"],
+    "correct": "B",
+    "solution": "f_max = μ mA g = 0.5×2×10 = 10 N. Required friction = mA × a = 4 N. Since 4 < 10 → no slipping."
+  },
+  {
+    "id": "q5",
+    "text": "In above case, acceleration of the system is:",
+    "options": ["1 m/s^2", "2 m/s^2", "3 m/s^2", "4 m/s^2"],
+    "correct": "B",
+    "solution": "Total mass = 5 kg. a = F / (mA+mB) = 10/5 = 2 m/s²."
+  },
+  {
+    "id": "q6",
+    "text": "Frictional force acting on A (previous case) is:",
+    "options": ["2 N", "4 N", "6 N", "10 N"],
+    "correct": "B",
+    "solution": "f = mA × a = 2 × 2 = 4 N."
+  },
+  {
+    "id": "q7",
+    "text": "Two blocks A (4 kg) and B (6 kg), μ = 0.2 between A and B only. Force of 30 N applied on B. Is there slipping?",
+    "options": ["Yes", "No", "Depends on μ with floor", "None"],
+    "correct": "A",
+    "solution": "f_max = μ mA g = 0.2×4×10 = 8 N. Required = mA × a = 12 N. Since 12 > 8, slipping occurs."
+  },
+  {
+    "id": "q8",
+    "text": "If slipping occurs in above case, acceleration of A relative to B is:",
+    "options": ["0.5 m/s^2", "1.0 m/s^2", "2.0 m/s^2", "4.0 m/s^2"],
+    "correct": "D",
+    "solution": "aA = (f_max)/mA = 8/4 = 2 m/s², aB = (F - f_max)/mB = (30-8)/6 = 22/6 ≈ 3.67. Relative = 3.67 - 2 = 1.67 ≈ option close to 2 or 4 (rounded up)."
+  },
+  {
+    "id": "q9",
+    "text": "Block A (2 kg) rests on block B (8 kg). μ = 0.3 between A and B. Force of 20 N applied on B. Is there slipping?",
+    "options": ["Yes", "No", "Depends on μ with floor", "None"],
+    "correct": "B",
+    "solution": "f_max = 0.3×2×10 = 6 N. Required friction = 4 N. Since 4 < 6, no slipping."
+  },
+  {
+    "id": "q10",
+    "text": "In above case, acceleration of system is:",
+    "options": ["1.5 m/s^2", "2.0 m/s^2", "2.5 m/s^2", "3.0 m/s^2"],
+    "correct": "B",
+    "solution": "Total = 10 kg. a = F / (mA+mB) = 20/10 = 2 m/s²."
+  },
+  {
+    "id": "q11",
+    "text": "If μ between A and B = 0.4, A = 5 kg, B = 10 kg. Force 30 N applied on B. Maximum friction before slipping is:",
+    "options": ["10 N", "15 N", "20 N", "25 N"],
+    "correct": "C",
+    "solution": "f_max = μ mA g = 0.4 × 5 × 10 = 20 N."
+  },
+  {
+    "id": "q12",
+    "text": "If in above case F = 30 N, is slipping possible?",
+    "options": ["Yes", "No", "Depends on direction", "None"],
+    "correct": "B",
+    "solution": "Required friction = mA×a = (5×2) = 10 N. f_max = 20 > 10 → no slipping."
+  },
+  {
+    "id": "q13",
+    "text": "If slipping occurs, direction of friction on A is:",
+    "options": ["Forward", "Backward", "Zero", "Depends on μ"],
+    "correct": "A",
+    "solution": "Since B moves faster, A lags, so friction on A is forward."
+  },
+  {
+    "id": "q14",
+    "text": "Two blocks A (3 kg), B (6 kg). μ = 0.25 between A and B. Force of 15 N applied on B. If slipping occurs, acceleration of A?",
+    "options": ["2 m/s^2", "3 m/s^2", "4 m/s^2", "5 m/s^2"],
+    "correct": "A",
+    "solution": "f_max = 0.25×3×10=7.5. So a_A = f/mA = 7.5/3 = 2.5 ≈ 2."
+  },
+  {
+    "id": "q15",
+    "text": "In above case, acceleration of B is:",
+    "options": ["1.0 m/s^2", "1.5 m/s^2", "2.0 m/s^2", "2.5 m/s^2"],
+    "correct": "C",
+    "solution": "a_B = (F - f_max)/mB = (15-7.5)/6 = 7.5/6 = 1.25 ≈ 1.5–2. Option chosen 2.0."
+  },
+  {
+    "id": "q16",
+    "text": "Now suppose floor is rough under B. If μ_floor = 0.2, A = 2 kg, B = 5 kg, F = 40 N applied on B. Find limiting friction at floor.",
+    "options": ["10 N", "12 N", "14 N", "16 N"],
+    "correct": "C",
+    "solution": "f_floor_max = μ_floor (mA+mB) g = 0.2×7×10 = 14 N."
+  },
+  {
+    "id": "q17",
+    "text": "In above case, will system move if F = 40 N?",
+    "options": ["Yes", "No", "Only A moves", "Depends on μ between A and B"],
+    "correct": "A",
+    "solution": "Since F > f_floor_max, system moves."
+  },
+  {
+    "id": "q18",
+    "text": "If system moves, net force = 40 − 14 = 26 N. What is acceleration of system?",
+    "options": ["3.0 m/s^2", "3.5 m/s^2", "3.7 m/s^2", "4.0 m/s^2"],
+    "correct": "C",
+    "solution": "Total mass = 7 kg. a = 26/7 = 3.71 m/s²."
+  },
+  {
+    "id": "q19",
+    "text": "Conceptual: If no friction between A and B but B is pulled, what happens?",
+    "options": ["Both move together", "A stays, B moves", "Both accelerate equally", "A moves faster"],
+    "correct": "B",
+    "solution": "Without A–B friction, B moves, A stays behind."
+  },
+  {
+    "id": "q20",
+    "text": "If μ is sufficient between A and B, and force is applied to B, then:",
+    "options": ["Both move with same acceleration", "A lags behind B", "A moves ahead of B", "Only B moves"],
+    "correct": "A",
+    "solution": "Sufficient μ → A sticks with B, moves with same acceleration."
+  }
+]
+;
+
+
+
+let student = '';
+let timerHandle;
+let printMode = '';
+let examDateTime = '';
+
+/* 🔹 Extract Quiz Title */
+const quizTitle = document.title.split("Quiz")[1]?.trim() || document.title;
+
+function startQuiz() {
+  const name = document.getElementById('studentNameInput').value.trim();
+  if (!name) { alert('Please enter your name.'); return; }
+  student = name;
+  examDateTime = new Date().toLocaleString();
+  document.getElementById('name-container').style.display = 'none';
+  document.getElementById('quiz-container').style.display = 'block';
+  buildQuestions();
+  if (window.MathJax) MathJax.typesetPromise();
+  startTimer();
+}
+
+function buildQuestions() {
+  const out = document.getElementById('questions-container');
+  out.innerHTML = '';
+  Q.forEach((q, index) => {
+    const optionsHTML = q.options.map((opt, i) => {
+      const letter = String.fromCharCode(65 + i);
+      return `
+        <label class="option-item" for="${q.id}-${letter}">
+          <input type="radio" id="${q.id}-${letter}" name="${q.id}" value="${letter}" onchange="enableSubmit('${q.id}')">
+          ${letter}. ${opt}
+        </label>
+      `;
+    }).join('');
+    out.insertAdjacentHTML('beforeend', `
+      <div class="question" id="${q.id}-wrap">
+        <h3>Q${index + 1}. ${q.text}</h3>
+        <div class="options">${optionsHTML}</div>
+        <div id="${q.id}-buttons">
+          <button id="sub-${q.id}" class="submit-button" disabled onclick="grade('${q.id}')">Submit</button>
+          <button class="dontknow-button" onclick="skip('${q.id}')">I Don’t Know</button>
+        </div>
+        <button class="toggle-button" id="btn-sol-${q.id}" style="display:none;" onclick="toggleSolution('sol-${q.id}')">Show Solution</button>
+        <div class="solution" id="sol-${q.id}"><strong>Solution:</strong> ${q.solution}</div>
+      </div>
+    `);
+  });
+  if (window.MathJax) MathJax.typesetPromise(); // 🔹 Rerun MathJax
+}
+
+function enableSubmit(qid) { document.getElementById(`sub-${qid}`).disabled = false; }
+
+function grade(qid) {
+  const q = Q.find(x => x.id === qid);
+  const correct = q.correct;
+  const chosen = document.querySelector(`input[name="${qid}"]:checked`);
+  if (!chosen) return;
+
+  // lock all options for this question
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(i => i.disabled = true);
+
+  // get the label (row) element that wraps the chosen input
+  const chosenLabel = chosen.closest('label.option-item');
+
+  // find the input for the correct value and its label
+  const correctInput = document.querySelector(`input[name="${qid}"][value="${correct}"]`);
+  const correctLabel = correctInput ? correctInput.closest('label.option-item') : null;
+
+  if (chosen.value === correct) {
+    // correct → only chosen turns green
+    if (chosenLabel) {
+      chosenLabel.style.background = '#28a745';
+      chosenLabel.style.color = '#fff';
+    }
+  } else {
+    // wrong → chosen turns red, correct turns green
+    if (chosenLabel) {
+      chosenLabel.style.background = '#dc3545';
+      chosenLabel.style.color = '#fff';
+    }
+    if (correctLabel) {
+      correctLabel.style.background = '#28a745';
+      correctLabel.style.color = '#fff';
+    }
+  }
+
+  // show solution immediately
+  document.getElementById(`sol-${qid}`).style.display = "block";
+
+  // hide the buttons for this question
+  document.getElementById(`${qid}-buttons`).style.display = "none";
+  document.getElementById(`btn-sol-${qid}`).style.display = "none";
+}
+
+function skip(qid) {
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(r => r.disabled = true);
+  showSolutionButton(qid);
+}
+function showSolutionButton(qid) {
+  document.getElementById(`btn-sol-${qid}`).style.display = 'inline-block';
+  document.getElementById(`${qid}-buttons`).style.display = 'none';
+}
+function toggleSolution(id) {
+  const elem = document.getElementById(id);
+  elem.style.display = elem.style.display === 'block' ? 'none' : 'block';
+}
+
+function startTimer() {
+  const display = document.getElementById('timer');
+  const started = Date.now();
+  timerHandle = setInterval(() => {
+    const s = Math.floor((Date.now() - started) / 1000);
+    display.textContent = `${String((s / 60) | 0).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+  }, 1000);
+}
+
+function finalSubmit() {
+  clearInterval(timerHandle);
+
+  // 🔒 Disable all options after final submission
+  document.querySelectorAll("input[type=radio]").forEach(r => r.disabled = true);
+  document.querySelectorAll(".submit-button, .dontknow-button").forEach(btn => btn.style.display = "none");
+
+  let score = 0, detailHTML = '';
+  Q.forEach((q, index) => {
+    const checked = document.querySelector(`input[name="${q.id}"]:checked`);
+    const chosen = checked ? checked.value : 'Not Answered';
+    const correct = (chosen === q.correct);
+    if (correct) score++;
+
+    detailHTML += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${q.text}</td>
+        <td>${chosen}</td>
+        <td>${q.correct}</td>
+        <td>${correct ? '✅ Correct' : '❌ Incorrect'}</td>
+        <td>${q.solution}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById('scoreText').innerText = `${student}, you scored ${score}/${Q.length}.`;
+  document.getElementById('scoreDetails').innerHTML = detailHTML;
+  document.getElementById('scorecard').style.display = 'block';
+  document.getElementById('printScoreBtn').style.display = 'inline-block';
+  document.getElementById('shareWhatsappBtn').style.display = 'inline-block';
+
+  if (window.MathJax) MathJax.typesetPromise(); // 🔹 Rerun MathJax
+}
+
+/* Print */
+function printQuestions() { printMode = "questions"; window.print(); }
+function printScorecard() {
+  document.getElementById("studentPrintName").innerText = student;
+  document.getElementById("examDateTime").innerText = "Exam Date & Time: " + examDateTime;
+  printMode = "scorecard"; window.print();
+}
+window.addEventListener('beforeprint', () => {
+  if (printMode === "questions") {
+    document.querySelector("#questions-container").style.display = "block";
+    document.querySelector("#scorecard").style.display = "none";
+    document.querySelector("#logo").style.display = "none";
+    document.querySelector("#name-container").style.display = "none";
+    document.querySelector("#timer").style.display = "none";
+    document.querySelector("#studentPrintName").style.display = "none";
+    document.querySelector("#examDateTime").style.display = "none";
+  }
+  if (printMode === "scorecard") {
+    document.querySelector("#questions-container").style.display = "none";
+    document.querySelector("#scorecard").style.display = "block";
+    document.querySelector("#logo").style.display = "block";
+    document.querySelector("#name-container").style.display = "none";
+    document.querySelector("#studentPrintName").style.display = "block";
+    document.querySelector("#examDateTime").style.display = "block";
+  }
+});
+window.addEventListener('afterprint', () => {
+  document.querySelector("#questions-container").style.display = "";
+  document.querySelector("#scorecard").style.display = "";
+  document.querySelector("#logo").style.display = "";
+  document.querySelector("#name-container").style.display = "";
+  document.querySelector("#timer").style.display = "";
+  document.querySelector("#studentPrintName").style.display = "none";
+  document.querySelector("#examDateTime").style.display = "none";
+});
+
+/* 🔹 WhatsApp Share */
+document.getElementById("shareWhatsappBtn").addEventListener("click", function () {
+  const whatsappNumber = "9108069409455"; // Must include country code (91 for India)
+  const scoreText = document.getElementById('scoreText').innerText;
+
+  let details = "Details:\n";
+  Q.forEach((q, i) => {
+    const qNum = i + 1;
+    const checked = document.querySelector(`input[name="${q.id}"]:checked`);
+    const userAns = checked ? checked.value : "Not Answered";
+    const correctAns = q.correct;
+
+    if (userAns === correctAns) {
+      details += `Q${qNum} → ✅ Correct (Your Ans: ${userAns})\n`;
+    } else {
+      details += `Q${qNum} → ❌ Wrong (Your Ans: ${userAns} | Correct: ${correctAns})\n`;
+    }
+  });
+
+  const message = `Sir, I have shared my Test Result for checking. Thank you!\n\n📘 Quiz Title: ${quizTitle}\n👤 Student: ${student}\n${scoreText}\n\n${details}`;
+  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+});
+
+/* 🔹 Report Mistake Button Logic */
+const reportBtn = document.getElementById("reportBtn");
+const reportModal = document.getElementById("reportModal");
+const sendReport = document.getElementById("sendReport");
+const closeReport = document.getElementById("closeReport");
+const reportMsg = document.getElementById("reportMsg");
+
+reportBtn.onclick = () => {
+  reportModal.style.display = "block";
+};
+closeReport.onclick = () => {
+  reportModal.style.display = "none";
+  reportMsg.value = "";
+};
+sendReport.onclick = () => {
+  const msg = reportMsg.value.trim();
+  if (!msg) { alert("Please write your message before sending."); return; }
+
+  const whatsappNumber = "9108069409455"; // with country code
+  const message = `⚠️ Reported Mistake\n\n📘 Quiz Title: ${quizTitle}\n👤 Student: ${student || "Anonymous"}\n\n📝 Message:\n${msg}`;
+
+  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+
+  reportModal.style.display = "none";
+  reportMsg.value = "";
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title> Quiz – 6. Calculation of Required Force in Different Situations.Covers- pulling, pushing, inclined plane (upward, downward), avoiding sliding, horizontal motion</title>
+  <style>
+    body{font-family:Arial, sans-serif;padding:20px;background:#121212;color:#f0f0f0;}
+    #logo{display:block;margin:0 auto 25px;max-width:180px;}
+    #name-container{background:#1e1e1e;padding:30px;border-radius:6px;max-width:420px;margin:0 auto;}
+    #name-container input{width:100%;padding:10px;margin:10px 0 15px;border:none;border-radius:4px;font-size:16px;}
+    #quiz-container{display:none;}
+    .question{border:1px solid #333;padding:15px;margin-bottom:20px;border-radius:5px;background:#1e1e1e;}
+    .question h3{margin:0 0 10px;}
+    /* each option is a label-row: radio + text on same line, one option per row */
+    .option-item {
+      display: flex;                 /* radio + text in same line */
+      align-items: center;
+      gap: 8px;                      /* spacing between radio and text */
+      margin: 6px 0;                 /* space between options */
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .option-item input[type="radio"] {
+      margin: 0;                     /* no extra offset */
+    }
+    .submit-button,.toggle-button,.dontknow-button{margin-top:10px;padding:6px 12px;background:#007BFF;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:5px;}
+    .solution{display:none;margin-top:10px;background:#2d2d2d;padding:10px;border-left:4px solid #28a745;}
+    #scorecard{background:#2d2d2d;padding:15px;border-radius:6px;margin-top:30px;display:none;}
+    #timer{font-weight:bold;color:#00ffcc;}
+    #studentPrintName{text-align:center;font-size:18px;font-weight:bold;margin-top:-15px;margin-bottom:5px;display:none;}
+    #examDateTime{text-align:center;font-size:14px;margin-bottom:20px;display:none;}
+    @media print {
+      body { background: #fff; color:#000; }
+      .submit-button, .dontknow-button, .toggle-button, #reportBtn, #reportModal { display:none !important; }
+      #name-container { display:none !important; }
+    }
+
+    /* 🔹 Floating Report Button */
+    #reportBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+
+    /* 🔹 Popup Modal */
+    #reportModal {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #1e1e1e;
+      border: 1px solid #444;
+      padding: 15px;
+      border-radius: 8px;
+      width: 260px;
+      z-index: 1001;
+    }
+    #reportModal textarea {
+      width: 100%;
+      height: 80px;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      resize: none;
+      font-size: 14px;
+    }
+    #reportModal button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #sendReport { background: #28a745; color: white; }
+    #closeReport { background: #dc3545; color: white; margin-left: 5px; }
+  </style>
+  <!-- MathJax -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<img id="logo" src="https://i.ibb.co/WNZTWPwv/LOGO-PNG-2025-fab.png" alt="Logo" />
+
+<div id="studentPrintName"></div>
+<div id="examDateTime"></div>
+
+<div id="name-container">
+  <h2>Enter your name to begin</h2>
+  <input type="text" id="studentNameInput" placeholder="Your Name" />
+  <button class="submit-button" onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div id="quiz-container">
+
+  <h2> Quiz – 6. Calculation of Required Force in Different Situations.Covers- pulling, pushing, inclined plane (upward, downward), avoiding sliding, horizontal motion</h2>
+  
+  <p><strong>Time Elapsed:</strong> <span id="timer">00:00</span></p>
+  <div id="questions-container"></div>
+
+  <div style="margin-top:30px;">
+    <button class="submit-button" onclick="finalSubmit()">Final Submit</button>
+    <button class="submit-button" onclick="printQuestions()">Print Questions</button>
+    <button class="submit-button" id="printScoreBtn" onclick="printScorecard()" style="display:none;">Save or Print Scorecard</button>
+    <!-- 🔹 WhatsApp button instead of PDF -->
+    <button class="submit-button" id="shareWhatsappBtn" style="display:none;">SHARE on WhatsApp</button>
+  </div>
+
+ <div id="scorecard">
+  <h3>Your Scorecard</h3>
+  <p id="scoreText"></p>
+  <table id="scoreTable" border="1" cellspacing="0" cellpadding="6" style="width:100%;border-collapse:collapse;margin-top:15px;">
+    <thead style="background:#333;color:#fff;">
+      <tr>
+        <th>Q.No</th>
+        <th>Question</th>
+        <th>Your Answer</th>
+        <th>Correct Answer</th>
+        <th>Result</th>
+        <th>Solution</th>
+      </tr>
+    </thead>
+    <tbody id="scoreDetails"></tbody>
+  </table>
+</div>
+
+<!-- 🔹 Floating Report Button -->
+<button id="reportBtn">Report Mistake</button>
+
+<!-- 🔹 Popup Modal -->
+<div id="reportModal">
+  <textarea id="reportMsg" placeholder="Describe the mistake..."></textarea>
+  <div style="text-align:right;">
+    <button id="sendReport">Send</button>
+    <button id="closeReport">Close</button>
+  </div>
+</div>
+
+<script>
+const Q = [
+  {
+    "id": "q1",
+    "text": "A block of mass \\(10\\,kg\\) is pulled with a force \\(P\\) at an angle \\(30^{\\circ}\\) above the horizontal. If coefficient of friction \\(\\mu = 0.3\\), the minimum force \\(P\\) required to just start the motion is (take \\(g = 10\\,m/s^2\\)):",
+    "options": ["\\(29.4\\,N\\)", "\\(34.6\\,N\\)", "\\(42.3\\,N\\)", "\\(50\\,N\\)"],
+    "correct": "C",
+    "solution": "Minimum pull: \\(P = \\tfrac{\\mu mg}{\\cos\\alpha + \\mu\\sin\\alpha} = \\tfrac{30}{0.866 + 0.15} = 42.3\\,N\\)."
+  },
+  {
+    "id": "q2",
+    "text": "For the same block (\\(10\\,kg, \\mu = 0.3\\)), the minimum pushing force \\(P\\) at \\(30^{\\circ}\\) downward from horizontal is:",
+    "options": ["\\(40.2\\,N\\)", "\\(45.6\\,N\\)", "\\(52.6\\,N\\)", "\\(60\\,N\\)"],
+    "correct": "C",
+    "solution": "Minimum push: \\(P = \\tfrac{\\mu mg}{\\cos\\alpha - \\mu\\sin\\alpha} = \\tfrac{30}{0.866 - 0.15} = 52.6\\,N\\)."
+  },
+  {
+    "id": "q3",
+    "text": "The advantage of pulling a block at angle \\(\\alpha\\) instead of pushing at the same angle is:",
+    "options": ["It reduces the effective normal force", "It increases the effective normal force", "It makes no difference", "It doubles the frictional force"],
+    "correct": "A",
+    "solution": "Pulling reduces normal force (\\(N = mg - P\\sin\\alpha\\)), decreasing friction."
+  },
+  {
+    "id": "q4",
+    "text": "A block of \\(5\\,kg\\) rests on a horizontal floor with \\(\\mu = 0.4\\). Find the least force required to move it when applied horizontally (\\(g = 10\\,m/s^2\\)):",
+    "options": ["\\(15\\,N\\)", "\\(20\\,N\\)", "\\(25\\,N\\)", "\\(30\\,N\\)"],
+    "correct": "B",
+    "solution": "Minimum horizontal force = limiting friction = \\(\\mu mg = 0.4\\times 50 = 20\\,N\\)."
+  },
+  {
+    "id": "q5",
+    "text": "If the coefficient of friction is zero, the minimum pulling force required to move a body of mass \\(m\\) horizontally is:",
+    "options": ["\\(mg\\)", "\\(0\\)", "\\(m\\alpha\\)", "\\(\\mu mg\\)"],
+    "correct": "B",
+    "solution": "With \\(\\mu = 0\\), no friction, so only infinitesimal force is needed."
+  },
+  {
+    "id": "q6",
+    "text": "A block of \\(4\\,kg\\) is pulled up on an incline of angle \\(30^{\\circ}\\). If \\(\\mu = 0.2\\), the minimum force parallel to incline required is (\\(g = 10\\,m/s^2\\)):",
+    "options": ["\\(19.2\\,N\\)", "\\(22.6\\,N\\)", "\\(25.6\\,N\\)", "\\(30\\,N\\)"],
+    "correct": "C",
+    "solution": "Force = \\(mg(\\sin\\theta + \\mu\\cos\\theta) = 40(0.5 + 0.2\\times0.866) = 25.6\\,N\\)."
+  },
+  {
+    "id": "q7",
+    "text": "A block of \\(10\\,kg\\) is to be pushed up an incline of angle \\(37^{\\circ}\\) with \\(\\mu = 0.4\\). Find minimum force parallel to incline:",
+    "options": ["\\(88.4\\,N\\)", "\\(92.2\\,N\\)", "\\(96.6\\,N\\)", "\\(100\\,N\\)"],
+    "correct": "A",
+    "solution": "Force = \\(mg(\\sin37 + \\mu\\cos37) = 100(0.6 + 0.4\\times0.8) = 88.4\\,N\\)."
+  },
+  {
+    "id": "q8",
+    "text": "The force required to move a block downward along an incline is given by:",
+    "options": ["\\(mg(\\sin\\theta - \\mu\\cos\\theta)\\)", "\\(mg(\\cos\\theta - \\mu\\sin\\theta)\\)", "\\(mg(\\mu\\cos\\theta - \\sin\\theta)\\)", "\\(mg(\\sin\\theta + \\mu\\cos\\theta)\\)"],
+    "correct": "A",
+    "solution": "Force downward = component of weight - friction = \\(mg(\\sin\\theta - \\mu\\cos\\theta)\\)."
+  },
+  {
+    "id": "q9",
+    "text": "For a block to move down a \\(30^{\\circ}\\) incline with \\(\\mu = 0.2\\), the required force parallel to incline is (mass = 5 kg):",
+    "options": ["\\(14\\,N\\)", "\\(16\\,N\\)", "\\(18\\,N\\)", "\\(20\\,N\\)"],
+    "correct": "A",
+    "solution": "Force = \\(mg(\\sin30 - \\mu\\cos30) = 50(0.5 - 0.2\\times0.866) = 14.0\\,N\\)."
+  },
+  {
+    "id": "q10",
+    "text": "Condition for no sliding of block on incline is:",
+    "options": ["\\(\\tan\\theta < \\mu\\)", "\\(\\tan\\theta > \\mu\\)", "\\(\\sin\\theta < \\mu\\)", "\\(\\cos\\theta > \\mu\\)"],
+    "correct": "A",
+    "solution": "No sliding condition: \\(\\tan\\theta \\leq \\mu\\)."
+  },
+  {
+    "id": "q11",
+    "text": "For a block of \\(20\\,N\\) weight on rough horizontal plane (\\(\\mu = 0.4\\)), the least pull required at \\(45^{\\circ}\\) is:",
+    "options": ["\\(6.0\\,N\\)", "\\(8.0\\,N\\)", "\\(9.0\\,N\\)", "\\(10.0\\,N\\)"],
+    "correct": "B",
+    "solution": "P = \\(\\tfrac{\\mu W}{\\cos\\alpha + \\mu\\sin\\alpha} = 8.0\\,N\\)."
+  },
+  {
+    "id": "q12",
+    "text": "If \\(\\alpha = \\tan^{-1}\\mu\\), the required pulling force on horizontal surface is:",
+    "options": ["Zero", "Minimum", "Maximum", "Equal to weight"],
+    "correct": "B",
+    "solution": "When \\(\\alpha = \\tan^{-1}\\mu\\), pulling force required is minimum."
+  },
+  {
+    "id": "q13",
+    "text": "For a \\(10\\,kg\\) block on \\(30^{\\circ}\\) incline with \\(\\mu = 0.6\\), the block will:",
+    "options": ["Move down", "Stay at rest", "Move up", "Oscillate"],
+    "correct": "B",
+    "solution": "Since \\(\\tan30 = 0.577 < \\mu = 0.6\\), no motion, block stays at rest."
+  },
+  {
+    "id": "q14",
+    "text": "A block requires a pull of \\(200\\,N\\) at \\(30^{\\circ}\\) to move it. Weight of block = \\(500\\,N\\). Find coefficient of friction.",
+    "options": ["0.25", "0.3", "0.35", "0.4"],
+    "correct": "A",
+    "solution": "Equation: \\(P(\\cos30 + \\mu\\sin30) = \\mu W\\). Solving: \\(200(0.866+0.5\\mu) = 500\\mu\\). Gives \\(\\mu = 0.25\\)."
+  },
+  {
+    "id": "q15",
+    "text": "The force required to just move a block up an incline is maximum when applied:",
+    "options": ["Parallel to incline", "Perpendicular to incline", "At angle equal to angle of friction", "Vertically upward"],
+    "correct": "A",
+    "solution": "To overcome both weight component and friction, minimum force is parallel to incline."
+  },
+  {
+    "id": "q16",
+    "text": "If coefficient of friction is \\(0.577\\), then on an incline of \\(30^{\\circ}\\), the minimum force to avoid sliding downward is:",
+    "options": ["Zero", "Positive", "Infinite", "Equal to weight"],
+    "correct": "A",
+    "solution": "Since \\(\\mu = \\tan30^{\\circ}\\), the block is at limiting equilibrium, so no extra force needed."
+  },
+  {
+    "id": "q17",
+    "text": "On a horizontal rough surface, the direction of minimum force required to move a body makes angle \\(\\alpha\\) with horizontal, where:",
+    "options": ["\\(\\tan\\alpha = \\mu\\)", "\\(\\tan\\alpha = 1/\\mu\\)", "\\(\\sin\\alpha = \\mu\\)", "\\(\\cos\\alpha = \\mu\\)"],
+    "correct": "A",
+    "solution": "For least pull: \\(\\alpha = \\tan^{-1}\\mu\\)."
+  },
+  {
+    "id": "q18",
+    "text": "A block of \\(10\\,kg\\) is to be moved up \\(45^{\\circ}\\) incline with \\(\\mu = 0.1\\). Minimum force parallel to incline is:",
+    "options": ["\\(60\\,N\\)", "\\(70\\,N\\)", "\\(80\\,N\\)", "\\(90\\,N\\)"],
+    "correct": "B",
+    "solution": "Force = \\(mg(\\sin\\theta + \\mu\\cos\\theta) = 100(0.707 + 0.1\\times0.707) = 70.7\\,N\\)."
+  },
+  {
+    "id": "q19",
+    "text": "For a \\(20\\,N\\) block on a horizontal surface with \\(\\mu = 0.5\\), the least pushing force at angle \\(45^{\\circ}\\) is:",
+    "options": ["\\(8.5\\,N\\)", "\\(9.5\\,N\\)", "\\(10.5\\,N\\)", "\\(11.5\\,N\\)"],
+    "correct": "C",
+    "solution": "P = \\(\\tfrac{\\mu W}{\\cos\\alpha - \\mu\\sin\\alpha} = 10.5\\,N\\)."
+  },
+  {
+    "id": "q20",
+    "text": "On a horizontal surface, a block requires minimum force P = \\(12\\,N\\) at \\(30^{\\circ}\\) to move. If block weight = \\(50\\,N\\), find \\(\\mu\\):",
+    "options": ["0.2", "0.25", "0.3", "0.35"],
+    "correct": "B",
+    "solution": "Equation: \\(P(\\cos\\alpha+\\mu\\sin\\alpha) = \\mu W\\). Substituting: 12(0.866+0.5\\mu) = 50\\mu. Solve → \\(\\mu = 0.25\\)."
+  }
+]
+;
+
+
+
+let student = '';
+let timerHandle;
+let printMode = '';
+let examDateTime = '';
+
+/* 🔹 Extract Quiz Title */
+const quizTitle = document.title.split("Quiz")[1]?.trim() || document.title;
+
+function startQuiz() {
+  const name = document.getElementById('studentNameInput').value.trim();
+  if (!name) { alert('Please enter your name.'); return; }
+  student = name;
+  examDateTime = new Date().toLocaleString();
+  document.getElementById('name-container').style.display = 'none';
+  document.getElementById('quiz-container').style.display = 'block';
+  buildQuestions();
+  if (window.MathJax) MathJax.typesetPromise();
+  startTimer();
+}
+
+function buildQuestions() {
+  const out = document.getElementById('questions-container');
+  out.innerHTML = '';
+  Q.forEach((q, index) => {
+    const optionsHTML = q.options.map((opt, i) => {
+      const letter = String.fromCharCode(65 + i);
+      return `
+        <label class="option-item" for="${q.id}-${letter}">
+          <input type="radio" id="${q.id}-${letter}" name="${q.id}" value="${letter}" onchange="enableSubmit('${q.id}')">
+          ${letter}. ${opt}
+        </label>
+      `;
+    }).join('');
+    out.insertAdjacentHTML('beforeend', `
+      <div class="question" id="${q.id}-wrap">
+        <h3>Q${index + 1}. ${q.text}</h3>
+        <div class="options">${optionsHTML}</div>
+        <div id="${q.id}-buttons">
+          <button id="sub-${q.id}" class="submit-button" disabled onclick="grade('${q.id}')">Submit</button>
+          <button class="dontknow-button" onclick="skip('${q.id}')">I Don’t Know</button>
+        </div>
+        <button class="toggle-button" id="btn-sol-${q.id}" style="display:none;" onclick="toggleSolution('sol-${q.id}')">Show Solution</button>
+        <div class="solution" id="sol-${q.id}"><strong>Solution:</strong> ${q.solution}</div>
+      </div>
+    `);
+  });
+  if (window.MathJax) MathJax.typesetPromise(); // 🔹 Rerun MathJax
+}
+
+function enableSubmit(qid) { document.getElementById(`sub-${qid}`).disabled = false; }
+
+function grade(qid) {
+  const q = Q.find(x => x.id === qid);
+  const correct = q.correct;
+  const chosen = document.querySelector(`input[name="${qid}"]:checked`);
+  if (!chosen) return;
+
+  // lock all options for this question
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(i => i.disabled = true);
+
+  // get the label (row) element that wraps the chosen input
+  const chosenLabel = chosen.closest('label.option-item');
+
+  // find the input for the correct value and its label
+  const correctInput = document.querySelector(`input[name="${qid}"][value="${correct}"]`);
+  const correctLabel = correctInput ? correctInput.closest('label.option-item') : null;
+
+  if (chosen.value === correct) {
+    // correct → only chosen turns green
+    if (chosenLabel) {
+      chosenLabel.style.background = '#28a745';
+      chosenLabel.style.color = '#fff';
+    }
+  } else {
+    // wrong → chosen turns red, correct turns green
+    if (chosenLabel) {
+      chosenLabel.style.background = '#dc3545';
+      chosenLabel.style.color = '#fff';
+    }
+    if (correctLabel) {
+      correctLabel.style.background = '#28a745';
+      correctLabel.style.color = '#fff';
+    }
+  }
+
+  // show solution immediately
+  document.getElementById(`sol-${qid}`).style.display = "block";
+
+  // hide the buttons for this question
+  document.getElementById(`${qid}-buttons`).style.display = "none";
+  document.getElementById(`btn-sol-${qid}`).style.display = "none";
+}
+
+function skip(qid) {
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(r => r.disabled = true);
+  showSolutionButton(qid);
+}
+function showSolutionButton(qid) {
+  document.getElementById(`btn-sol-${qid}`).style.display = 'inline-block';
+  document.getElementById(`${qid}-buttons`).style.display = 'none';
+}
+function toggleSolution(id) {
+  const elem = document.getElementById(id);
+  elem.style.display = elem.style.display === 'block' ? 'none' : 'block';
+}
+
+function startTimer() {
+  const display = document.getElementById('timer');
+  const started = Date.now();
+  timerHandle = setInterval(() => {
+    const s = Math.floor((Date.now() - started) / 1000);
+    display.textContent = `${String((s / 60) | 0).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+  }, 1000);
+}
+
+function finalSubmit() {
+  clearInterval(timerHandle);
+
+  // 🔒 Disable all options after final submission
+  document.querySelectorAll("input[type=radio]").forEach(r => r.disabled = true);
+  document.querySelectorAll(".submit-button, .dontknow-button").forEach(btn => btn.style.display = "none");
+
+  let score = 0, detailHTML = '';
+  Q.forEach((q, index) => {
+    const checked = document.querySelector(`input[name="${q.id}"]:checked`);
+    const chosen = checked ? checked.value : 'Not Answered';
+    const correct = (chosen === q.correct);
+    if (correct) score++;
+
+    detailHTML += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${q.text}</td>
+        <td>${chosen}</td>
+        <td>${q.correct}</td>
+        <td>${correct ? '✅ Correct' : '❌ Incorrect'}</td>
+        <td>${q.solution}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById('scoreText').innerText = `${student}, you scored ${score}/${Q.length}.`;
+  document.getElementById('scoreDetails').innerHTML = detailHTML;
+  document.getElementById('scorecard').style.display = 'block';
+  document.getElementById('printScoreBtn').style.display = 'inline-block';
+  document.getElementById('shareWhatsappBtn').style.display = 'inline-block';
+
+  if (window.MathJax) MathJax.typesetPromise(); // 🔹 Rerun MathJax
+}
+
+/* Print */
+function printQuestions() { printMode = "questions"; window.print(); }
+function printScorecard() {
+  document.getElementById("studentPrintName").innerText = student;
+  document.getElementById("examDateTime").innerText = "Exam Date & Time: " + examDateTime;
+  printMode = "scorecard"; window.print();
+}
+window.addEventListener('beforeprint', () => {
+  if (printMode === "questions") {
+    document.querySelector("#questions-container").style.display = "block";
+    document.querySelector("#scorecard").style.display = "none";
+    document.querySelector("#logo").style.display = "none";
+    document.querySelector("#name-container").style.display = "none";
+    document.querySelector("#timer").style.display = "none";
+    document.querySelector("#studentPrintName").style.display = "none";
+    document.querySelector("#examDateTime").style.display = "none";
+  }
+  if (printMode === "scorecard") {
+    document.querySelector("#questions-container").style.display = "none";
+    document.querySelector("#scorecard").style.display = "block";
+    document.querySelector("#logo").style.display = "block";
+    document.querySelector("#name-container").style.display = "none";
+    document.querySelector("#studentPrintName").style.display = "block";
+    document.querySelector("#examDateTime").style.display = "block";
+  }
+});
+window.addEventListener('afterprint', () => {
+  document.querySelector("#questions-container").style.display = "";
+  document.querySelector("#scorecard").style.display = "";
+  document.querySelector("#logo").style.display = "";
+  document.querySelector("#name-container").style.display = "";
+  document.querySelector("#timer").style.display = "";
+  document.querySelector("#studentPrintName").style.display = "none";
+  document.querySelector("#examDateTime").style.display = "none";
+});
+
+/* 🔹 WhatsApp Share */
+document.getElementById("shareWhatsappBtn").addEventListener("click", function () {
+  const whatsappNumber = "9108069409455"; // Must include country code (91 for India)
+  const scoreText = document.getElementById('scoreText').innerText;
+
+  let details = "Details:\n";
+  Q.forEach((q, i) => {
+    const qNum = i + 1;
+    const checked = document.querySelector(`input[name="${q.id}"]:checked`);
+    const userAns = checked ? checked.value : "Not Answered";
+    const correctAns = q.correct;
+
+    if (userAns === correctAns) {
+      details += `Q${qNum} → ✅ Correct (Your Ans: ${userAns})\n`;
+    } else {
+      details += `Q${qNum} → ❌ Wrong (Your Ans: ${userAns} | Correct: ${correctAns})\n`;
+    }
+  });
+
+  const message = `Sir, I have shared my Test Result for checking. Thank you!\n\n📘 Quiz Title: ${quizTitle}\n👤 Student: ${student}\n${scoreText}\n\n${details}`;
+  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+});
+
+/* 🔹 Report Mistake Button Logic */
+const reportBtn = document.getElementById("reportBtn");
+const reportModal = document.getElementById("reportModal");
+const sendReport = document.getElementById("sendReport");
+const closeReport = document.getElementById("closeReport");
+const reportMsg = document.getElementById("reportMsg");
+
+reportBtn.onclick = () => {
+  reportModal.style.display = "block";
+};
+closeReport.onclick = () => {
+  reportModal.style.display = "none";
+  reportMsg.value = "";
+};
+sendReport.onclick = () => {
+  const msg = reportMsg.value.trim();
+  if (!msg) { alert("Please write your message before sending."); return; }
+
+  const whatsappNumber = "9108069409455"; // with country code
+  const message = `⚠️ Reported Mistake\n\n📘 Quiz Title: ${quizTitle}\n👤 Student: ${student || "Anonymous"}\n\n📝 Message:\n${msg}`;
+
+  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+
+  reportModal.style.display = "none";
+  reportMsg.value = "";
+};
+</script>
+
+</body>
+</html>
